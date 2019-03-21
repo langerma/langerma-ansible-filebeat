@@ -3,5 +3,5 @@
   shell: "supervisorctl reread && supervisorctl update"
   become: yes
 
-- name: reestart filebeat
+- name: "restart filebeat"
   supervisorctl: name=filebeat state=restarted
