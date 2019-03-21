@@ -7,7 +7,7 @@
     state: directory
     mode: "u=rwx,g=rx,o=x"
 
-- name: Create filebeat config Path
+- name: Create filebeat log Path
   file:
     path: "{{ filebeat_log_dir }}"
     owner: "{{ filebeat_user }}"
@@ -40,7 +40,7 @@
     - update supervisord
     - restart filebeat
 
-- name: Copy filebeat service file
+- name: Copy filebeat config file
   template:
     src: filebeat.yml.j2
     dest: "{{ filebeat_install_dir }}/filebeat.yml"
