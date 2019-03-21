@@ -1,21 +1,2 @@
-
-################### filebeat Configuration #########################
-
-############################# filebeat ######################################
-{{filebeat_conf | to_nice_yaml}}
-
-###############################################################################
-############################# Libbeat Config ##################################
-# Base config file used by all other beats for using libbeat features
-
-############################# Output ##########################################
-
-{{ filebeat_output_conf | to_nice_yaml }}
-
-{% if shipper_conf is defined %}############################# Shipper #########################################
-
-{{ filebeat_shipper_conf | to_nice_yaml }}
-{% endif %}
-############################# Logging #########################################
-
-{{ filebeat_logging_conf | to_nice_yaml }}
+# {{ ansible_managed }}
+{{ filebeat_config|to_yaml }}
