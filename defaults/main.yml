@@ -1,0 +1,5 @@
+---
+filebeat_user: "hadoop"
+filebeat_group: "hadoop"
+filebeat_install_tar: "filebeat-6.6.2-linux-x86_64.tar.gz"
+filebeat_install_dir: "/app/filebeat"

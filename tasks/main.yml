@@ -1,0 +1,26 @@
+---
+- name: "copy {{ filebeat_install_tar }} to {{ filebeat_install_dir }}"
+  copy:
+    src: "files/{{ filebeat_install_tar }}"
+    dest: "{{ filebeat_install_dir }}"
+
+- name: "Extract {{ filebeat_install_tar }} into {{ filebeat_install_dir }}"
+  unarchive:
+    remote_src: yes
+    src: "{{ filebeat_install_dir }}/{{ filebeat_install_tar }}"
+    dest: "{{ filebeat_install_dir }}"
+    owner: "{{ filebeat_user }}"
+    group: "{{ filebeat_group }}"
+    extra_opts: [--strip-components=1]
+
+- name: Copy filebeat service file
+  template:
+    src: filebeat.ini.j2
+    dest: "{{ supervisord_ini_dir }}/filebeat.ini"
+    owner: "{{ filebeat_user }}"
+    group: "{{ filebeat_group }}"
+    mode: "u=rw,g=r,o=r"
+  when: '"data" in group_names'
+  notify:
+    - update supervisord
+    - reestart filebeat
