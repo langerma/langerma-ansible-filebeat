@@ -20,7 +20,16 @@
     owner: "{{ filebeat_user }}"
     group: "{{ filebeat_group }}"
     mode: "u=rw,g=r,o=r"
-  when: '"data" in group_names'
   notify:
     - update supervisord
-    - reestart filebeat
+    - restart filebeat
+
+- name: Copy filebeat service file
+  template:
+    src: filebeat.yml.j2
+    dest: "{{ filebeat_install_dir }}/filebeat.yml"
+    owner: "{{ filebeat_user }}"
+    group: "{{ filebeat_group }}"
+    mode: "u=rw,g=r,o=r"
+  notify:
+    - restart filebeat
