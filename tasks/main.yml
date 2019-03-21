@@ -1,4 +1,14 @@
 ---
+- name: Create filebeat Path
+  file:
+    path: "{{ item }}"
+    owner: "{{ filebeat_user }}"
+    group: "{{ filebeat_group }}"
+    state: directory
+    mode: "u=rwx,g=rwx,o=rwx"
+  with_items:
+    - "{{ filebeat_install_dir }}"
+    
 - name: "copy {{ filebeat_install_tar }} to {{ filebeat_install_dir }}"
   copy:
     src: "files/{{ filebeat_install_tar }}"
