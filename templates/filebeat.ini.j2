@@ -1,0 +1,7 @@
+[program:filebeat]
+user={{ filebeat_user }}
+command={{ filebeat_install_dir }}/filebeat
+autostart=true
+autorestart=true
+stdout_logfile={{ filebeat_log_dir }}/filebeat.out.log
+stderr_logfile={{ filebeat_log_dir }}/filebeat.err.log
