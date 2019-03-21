@@ -6,7 +6,7 @@
     group: "{{ filebeat_group }}"
     state: directory
     mode: "u=rwx,g=rx,o=x"
-    
+
 - name: "copy {{ filebeat_install_tar }} to {{ filebeat_install_dir }}"
   copy:
     src: "files/{{ filebeat_install_tar }}"
