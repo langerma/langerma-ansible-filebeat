@@ -1,142 +1,150 @@
-filebeat.inputs:
-- type: log
-  paths:
-    - /var/log/*.log
+filebeat:
+  # List of prospectors to fetch data.
+  prospectors:
+    {{ filebeat_prospectors | to_json }}
 
-#============================= Filebeat modules ===============================
+# Configure what outputs to use when sending the data collected by the beat.
+# Multiple outputs may be used.
+output:
 
-filebeat.config.modules:
-  path: ${path.config}/modules.d/*.yml
-  reload.enabled: true
-  reload.period: 10s
+{% if filebeat_output_elasticsearch_enabled %}
+  ### Elasticsearch as output
+  elasticsearch:
+    # Array of hosts to connect to.
+    hosts: {{ filebeat_output_elasticsearch_hosts | to_json }}
 
-#==================== Elasticsearch template setting ==========================
+    # Optional protocol and basic auth credentials. These are deprecated.
+    #protocol: "https"
+    #username: "admin"
+    #password: "s3cr3t"
 
-setup.template.settings:
-  index.number_of_shards: 3
-  #index.codec: best_compression
-  #_source.enabled: false
+    # Number of workers per Elasticsearch host.
+    #worker: 1
 
-#================================ General =====================================
+    # Optional index name. The default is "filebeat" and generates
+    # [filebeat-]YYYY.MM.DD keys.
+    #index: "filebeat"
 
-# The name of the shipper that publishes the network data. It can be used to group
-# all the transactions sent by a single shipper in the web interface.
-#name:
+    # Optional HTTP Path
+    #path: "/elasticsearch"
 
-# The tags of the shipper are included in their own field with each
-# transaction published.
-#tags: ["service-X", "web-tier"]
+    # Proxy server URL
+    # proxy_url: http://proxy:3128
 
-# Optional fields that you can specify to add additional information to the
-# output.
-#fields:
-#  env: staging
+    # The number of times a particular Elasticsearch index operation is attempted. If
+    # the indexing operation doesn't succeed after this many retries, the events are
+    # dropped. The default is 3.
+    #max_retries: 3
 
+    # The maximum number of events to bulk in a single Elasticsearch bulk API index request.
+    # The default is 50.
+    #bulk_max_size: 50
 
-#============================== Dashboards =====================================
-# These settings control loading the sample dashboards to the Kibana index. Loading
-# the dashboards is disabled by default and can be enabled either by setting the
-# options here, or by using the `-setup` CLI flag or the `setup` command.
-#setup.dashboards.enabled: false
+    # Configure http request timeout before failing an request to Elasticsearch.
+    #timeout: 90
 
-# The URL from where to download the dashboards archive. By default this URL
-# has a value which is computed based on the Beat name and version. For released
-# versions, this URL points to the dashboard archive on the artifacts.elastic.co
-# website.
-#setup.dashboards.url:
+    # The number of seconds to wait for new events between two bulk API index requests.
+    # If `bulk_max_size` is reached before this interval expires, addition bulk index
+    # requests are made.
+    #flush_interval: 1
 
-#============================== Kibana =====================================
+    # Boolean that sets if the topology is kept in Elasticsearch. The default is
+    # false. This option makes sense only for Packetbeat.
+    #save_topology: false
 
-# Starting with Beats version 6.0.0, the dashboards are loaded via the Kibana API.
-# This requires a Kibana endpoint configuration.
-setup.kibana:
+    # The time to live in seconds for the topology information that is stored in
+    # Elasticsearch. The default is 15 seconds.
+    #topology_expire: 15
 
-  # Kibana Host
-  # Scheme and port can be left out and will be set to the default (http and 5601)
-  # In case you specify and additional path, the scheme is required: http://localhost:5601/path
-  # IPv6 addresses should always be defined as: https://[2001:db8::1]:5601
-  #host: "localhost:5601"
+{% if filebeat_ssl_certificate_file and filebeat_ssl_key_file %}
+    # tls configuration. By default is off.
+    tls:
+      # List of root certificates for HTTPS server verifications
+      #certificate_authorities: ["/etc/pki/root/ca.pem"]
 
-  # Kibana Space ID
-  # ID of the Kibana Space into which the dashboards should be loaded. By default,
-  # the Default Space will be used.
-  #space.id:
+      # Certificate for TLS client authentication
+      certificate: "{{ filebeat_ssl_dir }}/{{ filebeat_ssl_certificate_file | basename }}"
 
-#============================= Elastic Cloud ==================================
+      # Client Certificate Key
+      certificate_key: "{{ filebeat_ssl_dir }}/{{ filebeat_ssl_key_file | basename}}"
 
-# These settings simplify using filebeat with the Elastic Cloud (https://cloud.elastic.co/).
+      # Controls whether the client verifies server certificates and host name.
+      # If insecure is set to true, all server host names and certificates will be
+      # accepted. In this mode TLS based connections are susceptible to
+      # man-in-the-middle attacks. Use only for testing.
+      insecure: {{ filebeat_ssl_insecure }}
 
-# The cloud.id setting overwrites the `output.elasticsearch.hosts` and
-# `setup.kibana.host` options.
-# You can find the `cloud.id` in the Elastic Cloud web UI.
-#cloud.id:
+      # Configure cipher suites to be used for TLS connections
+      #cipher_suites: []
 
-# The cloud.auth setting overwrites the `output.elasticsearch.username` and
-# `output.elasticsearch.password` settings. The format is `<user>:<pass>`.
-#cloud.auth:
+      # Configure curve types for ECDHE based cipher suites
+      #curve_types: []
 
-#================================ Outputs =====================================
+      # Configure minimum TLS version allowed for connection to logstash
+      #min_version: 1.0
 
-# Configure what output to use when sending the data collected by the beat.
+      # Configure maximum TLS version allowed for connection to logstash
+      #max_version: 1.2
+{% endif %}
+{% endif %}
 
-#-------------------------- Elasticsearch output ------------------------------
-#output.elasticsearch:
-  # Array of hosts to connect to.
-  # hosts: ["localhost:9200"]
+{% if filebeat_output_logstash_enabled %}
+  ### Logstash as output
+  logstash:
+    # The Logstash hosts
+    hosts: {{ filebeat_output_logstash_hosts | to_json }}
 
-  # Enabled ilm (beta) to use index lifecycle management instead daily indices.
-  #ilm.enabled: false
+    # Number of workers per Logstash host.
+    #worker: 1
 
-  # Optional protocol and basic auth credentials.
-  #protocol: "https"
-  #username: "elastic"
-  #password: "changeme"
+    # Optional load balance the events between the Logstash hosts
+    #loadbalance: true
 
-#----------------------------- Logstash output --------------------------------
-output.logstash:
-  # The Logstash hosts
-  hosts: ["localhost:5044"]
+    # Optional index name. The default index name depends on the each beat.
+    # For Packetbeat, the default is set to packetbeat, for Topbeat
+    # top topbeat and for Filebeat to filebeat.
+    #index: filebeat
 
-  # Optional SSL. By default is off.
-  # List of root certificates for HTTPS server verifications
-  #ssl.certificate_authorities: ["/etc/pki/root/ca.pem"]
+{% if filebeat_ssl_certificate_file and filebeat_ssl_key_file %}
+    # Optional TLS. By default is off.
+    tls:
+      # List of root certificates for HTTPS server verifications
+      #certificate_authorities: ["/etc/pki/root/ca.pem"]
 
-  # Certificate for SSL client authentication
-  #ssl.certificate: "/etc/pki/client/cert.pem"
+      # Certificate for TLS client authentication
+      certificate: "{{ filebeat_ssl_dir }}/{{ filebeat_ssl_certificate_file | basename }}"
 
-  # Client Certificate Key
-  #ssl.key: "/etc/pki/client/cert.key"
+      # Client Certificate Key
+      certificate_key: "{{ filebeat_ssl_dir }}/{{ filebeat_ssl_key_file | basename}}"
 
-#================================ Processors =====================================
+      # Controls whether the client verifies server certificates and host name.
+      # If insecure is set to true, all server host names and certificates will be
+      # accepted. In this mode TLS based connections are susceptible to
+      # man-in-the-middle attacks. Use only for testing.
+      #insecure: true
+      insecure: {{ filebeat_ssl_insecure }}
 
-# Configure processors to enhance or manipulate events generated by the beat.
+      # Configure cipher suites to be used for TLS connections
+      #cipher_suites: []
 
-processors:
-  - add_host_metadata: ~
-  - add_cloud_metadata: ~
+      # Configure curve types for ECDHE based cipher suites
+      #curve_types: []
+{% endif %}
 
-#================================ Logging =====================================
+{% if filebeat_enable_logging %}
+logging:
+  ### Filebeat log
+  level: {{ filebeat_log_level }}
 
-# Sets log level. The default log level is info.
-# Available log levels are: error, warning, info, debug
-#logging.level: debug
+  # Enable file rotation with default configuration
+  to_files: true
 
-# At debug level, you can selectively enable logging only for some components.
-# To enable all selectors use ["*"]. Examples of other selectors are "beat",
-# "publish", "service".
-#logging.selectors: ["*"]
+  # Do not log to syslog
+  to_syslog: false
 
-#============================== Xpack Monitoring ===============================
-# filebeat can export internal metrics to a central Elasticsearch monitoring
-# cluster.  This requires xpack monitoring to be enabled in Elasticsearch.  The
-# reporting is disabled by default.
-
-# Set to true to enable the monitoring reporter.
-#xpack.monitoring.enabled: false
-
-# Uncomment to send the metrics to Elasticsearch. Most settings from the
-# Elasticsearch output are accepted here as well. Any setting that is not set is
-# automatically inherited from the Elasticsearch output configuration, so if you
-# have the Elasticsearch output configured, you can simply uncomment the
-# following line.
-#xpack.monitoring.elasticsearch:
+  files:
+    path: {{ filebeat_log_dir }}
+    name: {{ filebeat_log_filename }}
+    keepfiles: 7
+{% endif %}
+{% endif %}
