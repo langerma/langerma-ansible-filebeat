@@ -1,6 +1,6 @@
 [program:filebeat]
 user={{ filebeat_user }}
-command={{ filebeat_install_dir }}/filebeat -c {{ filebeat_install_dir }}/filebeat.yml
+command={{ filebeat_install_dir }}/{{ filebeat_version }}/filebeat -c {{ filebeat_install_dir }}/{{ filebeat_version}}/filebeat.yml
 autostart=true
 autorestart=true
 stdout_logfile={{ filebeat_log_dir }}/filebeat.out.log

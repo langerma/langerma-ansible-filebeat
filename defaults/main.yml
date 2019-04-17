@@ -3,7 +3,8 @@ filebeat_user: "filebeat"
 filebeat_group: "filebeat"
 filebeat_install_tar: "filebeat-6.6.2-linux-x86_64.tar.gz"
 filebeat_install_dir: "/app/filebeat"
-filebeat_log_dir: "{{ filebeat_install_dir }}/logs"
+filebeat_version: "7.0.0"
+filebeat_log_dir: "{{ filebeat_install_dir }}/{{ filebeat_version }}/logs"
 supervisord_ini_dir: "/app/supervisord"
 
 filebeat_create_config: true

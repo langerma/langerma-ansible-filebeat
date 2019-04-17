@@ -7,6 +7,14 @@
     state: directory
     mode: "u=rwx,g=rx,o=x"
 
+- name: Create filebeat Version Path
+  file:
+    path: "{{ filebeat_install_dir }}/{{ filebeat_version }}"
+    owner: "{{ filebeat_user }}"
+    group: "{{ filebeat_group }}"
+    state: directory
+    mode: "u=rwx,g=rx,o=x"
+
 - name: Create filebeat log Path
   file:
     path: "{{ filebeat_log_dir }}"
@@ -20,11 +28,11 @@
     src: "files/{{ filebeat_install_tar }}"
     dest: "{{ filebeat_install_dir }}"
 
-- name: "Extract {{ filebeat_install_tar }} into {{ filebeat_install_dir }}"
+- name: "Extract {{ filebeat_install_tar }} into {{ filebeat_install_dir }}/{{ filebeat_version }}"
   unarchive:
     remote_src: yes
     src: "{{ filebeat_install_dir }}/{{ filebeat_install_tar }}"
-    dest: "{{ filebeat_install_dir }}"
+    dest: "{{ filebeat_install_dir }}/{{ filebeat_version }}"
     owner: "{{ filebeat_user }}"
     group: "{{ filebeat_group }}"
     extra_opts: [--strip-components=1]
@@ -43,7 +51,7 @@
 - name: Copy filebeat config file
   template:
     src: filebeat.yml.j2
-    dest: "{{ filebeat_install_dir }}/filebeat.yml"
+    dest: "{{ filebeat_install_dir }}/{{ filebeat_version }}/filebeat.yml"
     owner: "{{ filebeat_user }}"
     group: "{{ filebeat_group }}"
     mode: "u=rw,g=r,o=r"
